@@ -6,7 +6,8 @@ Let us try to compile a small Haskell program to Yhc Core using Yhc and Hugs, an
 The program:
 
 {{{
- module HCAR where
+
+module HCAR where
 map2 f [] = []
 map2 f (x:xs) = f x : map2 f xs
 }}}
@@ -14,7 +15,8 @@ map2 f (x:xs) = f x : map2 f xs
 Let us compile it with Yhc, and take a look at the Core:
 
 {{{
- [user@host hcar]$ yhc --core hcar.hs 
+
+[user@host hcar]$ yhc --core hcar.hs 
 [user@host hcar]$ yhc --viewcore HCAR.ycr
 module HCAR where
 import Data.Ratio
@@ -29,7 +31,8 @@ HCAR;map2 v215 v216 =
 Let us try the same with `corehugs`:
 
 {{{
- [user@host hcar]$ less HCAR.cor 
+
+[user@host hcar]$ less HCAR.cor 
 [user@host hcar]$ corehugs hcar.hs
 [user@host hcar]$ ls -l *.cor
 -rw-r--r-- 1 user user    242 2008-09-29 17:55 HCAR.cor
@@ -51,7 +54,8 @@ map2 _2 _1 = case _1 of {
 In order to link the Hugs Core files into a linked Yhc Core, we use the following short program:
 
 {{{
- [user@host hcar]$ cat lhugsc.hs 
+
+[user@host hcar]$ cat lhugsc.hs 
 module Main where
 import Yhc.Core                -- from the yhccore package
 import Yhc.Core.FrontEnd.Hugs  -- from the hugs2yc package
@@ -69,7 +73,8 @@ Arguments to `linkHugsCore` are:
 The output follows:
 
 {{{
- [user@host hcar]$ runhugs -98 -h4M lhugsc.hs 
+
+[user@host hcar]$ runhugs -98 -h4M lhugsc.hs 
 Parsing module ./HCAR.cor ... done
 Parsing module ./Hugs.Prelude.cor ... done
 Parsing module ./Hugs.cor ... done
