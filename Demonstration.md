@@ -1,0 +1,89 @@
+Let us try to compile a small Haskell program to Yhc Core using Yhc and Hugs, and compare the results.
+
+The program:
+
+```
+
+module HCAR where
+map2 f [] = []
+map2 f (x:xs) = f x : map2 f xs
+```
+
+Let us compile it with Yhc, and take a look at the Core:
+
+```
+
+[user@host hcar]$ yhc --core hcar.hs 
+[user@host hcar]$ yhc --viewcore HCAR.ycr
+module HCAR where
+import Data.Ratio
+import Prelude
+HCAR;map2 v215 v216 =
+    case v216 of
+        Prelude;[] -> Prelude;[]
+        (Prelude;:) v217 v218 ->
+            (Prelude;:) (v215 v217) (HCAR;map2 v215 v218)
+```
+
+Let us try the same with `corehugs`:
+
+```
+
+[user@host hcar]$ less HCAR.cor 
+[user@host hcar]$ corehugs hcar.hs
+[user@host hcar]$ ls -l *.cor
+-rw-r--r-- 1 user user    242 2008-09-29 17:55 HCAR.cor
+-rw-r--r-- 1 user user 490164 2008-09-29 17:55 Hugs.Prelude.cor
+-rw-r--r-- 1 user user     39 2008-09-29 17:55 Hugs.cor
+-rw-r--r-- 1 user user     45 2008-09-29 17:55 Prelude.cor
+[user@host hcar]$ cat HCAR.cor 
+module HCAR;
+map2 _2 _1 = case _1 of {
+  Hugs.Prelude.[] -> Hugs.Prelude.[];
+  Hugs.Prelude.: _4 _3 -> Hugs.Prelude.: (_2 _4) (HCAR.map2 _2 _3);
+  _ -> _fatbar
+};
+-- end of module HCAR --
+```
+
+`Corehugs` wrote several files with extension `.cor` in the working directory, one for each module loaded by Hugs. The `HCAR.cor` file is of interest. It contains the same `map2` function, but output in the Hugs Core syntax.
+
+In order to link the Hugs Core files into a linked Yhc Core, we use the following short program:
+
+```
+
+[user@host hcar]$ cat lhugsc.hs 
+module Main where
+import Yhc.Core                -- from the yhccore package
+import Yhc.Core.FrontEnd.Hugs  -- from the hugs2yc package
+main = do
+  ycore <- linkHugsCore ["."] ["HCAR;map2"] "HCAR"
+  putStrLn $ show ycore
+```
+
+Arguments to `linkHugsCore` are:
+
+  1. list of Hugs Core files locations
+  1. list of function names to preserve (reachability roots)
+  1. name of the linked Yhc Core module to create.
+
+The output follows:
+
+```
+
+[user@host hcar]$ runhugs -98 -h4M lhugsc.hs 
+Parsing module ./HCAR.cor ... done
+Parsing module ./Hugs.Prelude.cor ... done
+Parsing module ./Hugs.cor ... done
+Parsing module ./Prelude.cor ... done
+module HCAR where
+data Prelude;[] =
+      Prelude;[] 
+    | Prelude;: a0 a1
+HCAR;map2 _2 _1 =
+    case _1 of
+        Prelude;[] -> Prelude;[]
+        (Prelude;:) _4 _3 -> (Prelude;:) (_2 _4) (HCAR;map2 _2 _3)
+```
+
+So, the Haskell source was compiled by Hugs, and finalized by the Yhc Core linker.

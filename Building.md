@@ -1,0 +1,13 @@
+Unless said otherwise, Hugs may be built out of a custom snapshot by unpacking the tarball, changing to its toplevel directory, and issuing a typical sequence of commands: `configure; make`.
+
+To turn the Yhc Core related functionality on, specify `--enable-extcore` when running `configure`.
+
+Custom snapshots of Hugs are expected to build without any Haskell tools installed; only regular `gcc`-based toolchain is required.
+
+In order to run Hugs in-place (that is, without permanent installation), it is recommended to do the following:
+
+  1. Modify the login script to set the `HUGSDIR` environment variable to be set to the _`<`hugsroot`>`/hugsdir_ directory where _`<`hugsroot`>`_ is the directory where Hugs was built
+  1. Also make sure that _`<`hugsroot`>`/src_ directory is on `PATH`
+  1. Create a directory _$HOME/lib/hugs/packages_. In order to make other Haskell packages visible to Hugs, just symlink package roots into this directory.
+
+Finally run Hugs by just typing `hugs`. The same applies to `hugscore` and `ffihugs`: all of them will be on `PATH`.
